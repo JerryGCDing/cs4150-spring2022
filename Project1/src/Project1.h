@@ -7,18 +7,30 @@
 
 using namespace std;
 
-void static readMap(const std::string& filename, std::vector<std::vector<char>> &PathMap)
+void static readMap(const std::string& filename, std::vector<std::vector<char>>& PathMap)
 {
-
+    // Reading in is a pain, because to get natural PathMap[x][y] reference
+    // into the map, I need to flip things around from the order in which 
+    // they'll come from the  file.  My outer vector is a vector of columns,
+    // and the inner vectors are read in from last entry (highest y, at the 
+    // top of the map visually) to first entry (y=0, at the bottom of the map).
+    // So, when I read in a row (starting at the top, highest y) I'm creating 
+    // a vector inside the outer vector for each entry, and then putting the 
+    // new character at the front of that vector.
     std::ifstream file(filename);
-    std::vector<char> row;
     std::string input;
-    while (file >> input) {
-        row.clear();
-        for (char i : input) {
-            row.push_back(i);
+    while (file >> input)
+    {
+        size_t x = 0;
+        for (char c : input)
+        {
+            if (PathMap.size() <= x)
+            {
+                PathMap.push_back(std::vector<char>());
+            }
+            PathMap[x].insert(PathMap[x].begin(), c);
+            ++x;
         }
-        PathMap.insert(PathMap.begin(), row);
     }
 
     //To check if there are equal number of values in each row.
@@ -32,15 +44,20 @@ void static readMap(const std::string& filename, std::vector<std::vector<char>> 
     }
 }
 
-void static PrintMap(std::vector<std::vector<char>> PathMap) {
-    for (std::vector<char> name : PathMap)
+void static PrintMap(const std::vector<std::vector<char>>& PathMap) {
+    if (PathMap.empty())
+        return;
+
+    const int xSize = (int)PathMap.size();
+    const int ySize = (int)PathMap[0].size();
+
+    for (int y = ySize - 1; y >= 0; --y)
     {
-        for (char c : name)
+        for (int x = 0; x < xSize; ++x)
         {
-            std::cout << c;
+            std::cout << PathMap[x][y];
         }
         std::cout << endl;
-
     }
 }
 
